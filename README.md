@@ -19,32 +19,6 @@ The client is built with **React** and **Vite**, styled with custom **Vanilla CS
 
 ---
 
-## 🛠️ Architecture Overview
-
-The system uses a simple, robust Client-Server architecture over WebSockets:
-
-```mermaid
-sequenceDiagram
-    participant Client as React Dashboard (Vite)
-    participant Server as Express / WebSocket Server (Node)
-    
-    Client->>Server: 1. Establish WebSocket Connection (ws://)
-    Client->>Server: 2. Login Message { email }
-    Server->>Client: 3. Session Initialized (Portfolio, Subscriptions, History)
-    
-    Note over Server: Runs active 1Hz price simulator
-    
-    loop Every 1 Second
-        Server->>Client: 4. Broadcast Price Updates & Live PnL
-    end
-    
-    Client->>Server: 5. Trade Order (BUY/SELL)
-    Note over Server: Processes order & updates ledger in-memory
-    Server->>Client: 6. Order Confirmed + Updated Portfolio state
-```
-
----
-
 ## 📁 Project Directory Structure
 
 ```text
@@ -99,12 +73,4 @@ npm start
 ```
 The Express server will automatically serve the static optimized bundle from `/dist` on port `3001` (or your system's `PORT` environment variable).
 
----
 
-## 🎲 Simulation Engine Details
-
-*   **In-Memory Session Database**: All portfolios, balances, and orders are stored in memory mapped to the user's email address. Closing the browser does not lose your session state, provided the backend server remains running!
-*   **Market Price Generator**: The backend generates price fluctuations for every supported ticker every second using a random-walk algorithm with a slight bias:
-    $$\Delta P = P_{t-1} \times (r - 0.48) \times 3\%$$
-    *(where $r$ is a random float between 0 and 1)*
-*   **Historical Tracking**: The server keeps the last 60 data points (prices) for each active stock ticker, sending the array to clients so sparklines render immediately upon subscription.
